@@ -1,0 +1,90 @@
+trigger:
+  - none
+resources:
+- repo: self
+
+variables:
+
+##### Library Variable Group Name ##########
+
+  - group: Dev_Database
+
+##### Pipeline Specific Variable ##########
+
+  - name: configFilePath
+    value: './database.config'
+
+##### Database IP ##########
+  - name: KEY1
+    value: $(DATABASE_IP_STRING)
+  - name: KEY1_VALUE
+    value: $(DATABASE_IP_VALUE)
+
+######### Node Name #########
+  - name: KEY2
+    value: $(NODE_NAME_STRING)
+  - name: KEY2_VALUE
+    value: $(NODE_NAME_VALUE)
+
+jobs:
+- job: UpdateConfigFile
+  displayName: 'Update Config File'
+  pool: Default
+  steps:
+  - task: PowerShell@2
+    displayName: 'Update DB IP'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $configPath = "$(configFilePath)"
+        $key = "$(KEY1)"
+        $value = "$(KEY1_VALUE)"
+        
+        # Check The file before Update 
+        Get-Content -Path $configPath
+        
+        # Read the file contents
+        $content = Get-Content -Path $configPath
+
+        # Perform string replacement
+        $newContent = $content | ForEach-Object { $_ -replace $key, $value }
+
+        # Write the modified content back to the file
+        $newContent | Set-Content -Path $configPath
+        
+        # Check The file after Update 
+        Get-Content -Path $configPath
+
+
+  - task: PowerShell@2
+    displayName: 'Update NODE NAME'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $configPath = "$(configFilePath)"
+        $key = "$(KEY2)"
+        $value = "$(KEY2_VALUE)"
+        
+        # Check The file before Update #        
+        Get-Content -Path $configPath
+        
+        # Read the file contents
+        $content = Get-Content -Path $configPath
+        
+        # Perform string replacement
+        $newContent = $content | ForEach-Object { $_ -replace $key, $value }
+        
+        # Write the modified content back to the file
+        $newContent | Set-Content -Path $configPath
+
+        # Check The file after Update 
+        Get-Content -Path $configPath
+        
+  - task: PowerShell@2
+    displayName: 'check the updated file'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $configPath = "$(configFilePath)"
+        Get-Content -Path $configPath
+        

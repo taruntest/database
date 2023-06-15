@@ -1,0 +1,67 @@
+trigger:
+  - none
+resources:
+- repo: self
+
+variables:
+  configFilePath: './database.config'
+
+##### Database IP ##########
+  KEY1: $(DATABASE_STRING)
+  KEY1_VALUE: $(DATABASE_IP_VALUE)
+######### Node Name #########
+  KEY2: $(NODE_STRING)
+  KEY2_VALUE: $(NODE_VALUE)
+
+jobs:
+- job: UpdateConfigFile
+  displayName: 'Update Config File'
+  pool: Default
+  steps:
+  - task: PowerShell@2
+    displayName: 'Update DB IP'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $configPath = "$(configFilePath)"
+        $key = "$(KEY1)"
+        $value = "$(KEY1_VALUE)"
+        Get-Content -Path $configPath
+        
+        # Read the file contents
+        $content = Get-Content -Path $configPath
+
+        # Perform string replacement
+        $newContent = $content | ForEach-Object { $_ -replace $key, $value }
+
+        # Write the modified content back to the file
+        $newContent | Set-Content -Path $configPath
+
+
+  - task: PowerShell@2
+    displayName: 'Update NODE NAME'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $configPath = "$(configFilePath)"
+        $key = "$(KEY2)"
+        $value = "$(KEY2_VALUE)"
+        Get-Content -Path $configPath
+
+        # Read the file contents
+        $content = Get-Content -Path $configPath
+
+        # Perform string replacement
+        $newContent = $content | ForEach-Object { $_ -replace $key, $value }
+
+        # Write the modified content back to the file
+        $newContent | Set-Content -Path $configPath
+        
+  - task: PowerShell@2
+    displayName: 'check the updated file'
+    inputs:
+      targetType: 'inline'
+      script: |
+        $configPath = "$(configFilePath)"
+        Get-Content -Path $configPath
+        
